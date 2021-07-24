@@ -1,11 +1,33 @@
-import React from 'react'
-import {Message, Container, Card, Image, Icon, Statistic, Button} from 'semantic-ui-react'
+import React, {useEffect, useState} from 'react'
+import {Message, Container, Card, Image, Statistic, Icon, Button} from 'semantic-ui-react'
 import styled from 'styled-components'
+import useLottery from 'hooks/useLottery'
 
 const Home: React.FC = () => {
+  const lottery = useLottery()
+  // 所有参与彩票的人
+  const [allPlayers, setAllPlayers] = useState<number>(0)
+  // 总奖池
+  const [balance, setBalance] = useState<string>('0')
+  const [manager, setManager] = useState<string>()
+
+  useEffect(() => {
+    const getData = async ()=>{
+      const balanceRes = await lottery.getBalance()
+      setBalance(balanceRes.toString())
+
+      const allPlayersRes = await lottery.getAllPlayers()
+      setAllPlayers(allPlayersRes?.length)
+
+      const managerRes = await lottery.getManager()
+      setManager(managerRes)
+    }
+    getData()
+  }, [])
+
 
   // 连接钱包
-  const handleConnect = () => {
+  const handleConnect = async () => {
 
   }
 
@@ -26,7 +48,8 @@ const Home: React.FC = () => {
         <Card.Content>
           <Card.Header>周周彩</Card.Header>
           <Card.Meta>
-            <span>管理员地址：0x000000000000000000000000000000</span>
+            管理员地址：
+            <Address style={{fontSize: '12px'}}>{manager}</Address>
           </Card.Meta>
           <Card.Description>
             每周日晚上八点准时开奖
@@ -35,13 +58,13 @@ const Home: React.FC = () => {
         <Card.Content extra>
           <div>
             <Icon name='user'/>
-            22 人参与
+            {allPlayers} 人参与
           </div>
         </Card.Content>
 
         <Card.Content extra>
           <Statistic color="red">
-            <Statistic.Value>27 ether</Statistic.Value>
+            <Statistic.Value>{balance} ether</Statistic.Value>
           </Statistic>
         </Card.Content>
 
@@ -53,8 +76,6 @@ const Home: React.FC = () => {
         <Button color="yellow">开奖</Button>
         <Button color="red">退钱</Button>
       </Card>
-
-
     </HomeContainer>
   )
 }
@@ -67,6 +88,10 @@ const Flex = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+`
+
+const Address = styled.div`
+  word-break: break-all;
 `
 
 export default Home
